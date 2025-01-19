@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Graphics/Color.hpp>
 #include <random>
 #include <string>
 #include <vector>
@@ -63,12 +64,14 @@ void drawRectangles(sf::RenderWindow &window){
   sf::Text text(font);
   text.setCharacterSize(64);
   text.setFillColor(sf::Color::Black);
-    sf::RectangleShape rectangle({CELL_SIZE-3, CELL_SIZE-3});
+    sf::RectangleShape rectangle({CELL_SIZE, CELL_SIZE});
     for(int i = 0 ; i<9 ; i++){
         for(int j = 0 ; j<9 ; j++){
             text.setPosition({float(CELL_SIZE*i),float(CELL_SIZE*j)});
             text.setString(std::to_string(cells[i+j*9].number));
             rectangle.setPosition({float(CELL_SIZE*i) ,float(CELL_SIZE*j) });
+            rectangle.setOutlineThickness(10);
+            rectangle.setOutlineColor(sf::Color::Black);            
             window.draw(rectangle);
             window.draw(text);
         }
