@@ -26,7 +26,7 @@ std::vector<Cell> cells;
 
 sf::Text DrawTextForBoard()
 {
-  sf::Font font("assests/daFont.ttf");
+  sf::Font font("assests/EmojiFont.ttf");
   sf::Text text(font);
   text.setCharacterSize(64);
   text.setFillColor(sf::Color::Black);
@@ -35,7 +35,7 @@ sf::Text DrawTextForBoard()
 void generateSudoku(){
     std::random_device rd;
     std::mt19937 gen(rd());                         // seeding the number generator
-    std::uniform_int_distribution<> distrib(0, 9);
+    std::uniform_int_distribution<> distrib(1, 8);
     for(int i = 0 ; i<81; i++){
         cells[i].number = distrib(gen);
     }
@@ -59,7 +59,7 @@ void getMousPos(sf::RenderWindow &window)
   std::cout<<cells[mouse_x + mouse_y * 9].number;
 }
 void drawRectangles(sf::RenderWindow &window){
-  sf::Font font("assests/daFont.ttf");
+  sf::Font font("assests/Greek-Freak.ttf");
   sf::Text text(font);
   text.setCharacterSize(64);
   text.setFillColor(sf::Color::Black);
