@@ -1,5 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Color.hpp>
+#include <algorithm>
+#include <cmath>
 #include <random>
 #include <string>
 #include <vector>
@@ -67,13 +69,28 @@ void drawRectangles(sf::RenderWindow &window){
     sf::RectangleShape rectangle({CELL_SIZE, CELL_SIZE});
     for(int i = 0 ; i<9 ; i++){
         for(int j = 0 ; j<9 ; j++){
+            if(j%3==0 && j!=0) {
+            rectangle.setOutlineThickness(6);
+            rectangle.setOutlineColor(sf::Color::Black);
+            rectangle.setPosition({float(CELL_SIZE*i),float(CELL_SIZE*j)});
+            window.draw(rectangle);
+            }
+            else if (i%3==0 && i!=0) {
+            rectangle.setOutlineThickness(6);
+            rectangle.setOutlineColor(sf::Color::Black);
+            rectangle.setPosition({float(CELL_SIZE*i),float(CELL_SIZE*j)});
+            window.draw(rectangle);
+      
+      }
+            else{
+            rectangle.setOutlineThickness(1);
+            rectangle.setOutlineColor(sf::Color::Black);
+            rectangle.setPosition({float(CELL_SIZE*i) ,float(CELL_SIZE*j) });
+            window.draw(rectangle);
+      }
             text.setPosition({float(CELL_SIZE*i),float(CELL_SIZE*j)});
             text.setString(std::to_string(cells[i+j*9].number));
-            rectangle.setPosition({float(CELL_SIZE*i) ,float(CELL_SIZE*j) });
-            rectangle.setOutlineThickness(10);
-            rectangle.setOutlineColor(sf::Color::Black);            
-            window.draw(rectangle);
-            window.draw(text);
+                        window.draw(text);
         }
     }
 }
