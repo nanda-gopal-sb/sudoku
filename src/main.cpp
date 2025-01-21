@@ -1,5 +1,4 @@
 #include <SFML/Graphics.hpp>
-#include <bits/stdc++.h>
 #include <string>
 #include <vector>
 #include <stdlib.h>
@@ -215,7 +214,7 @@ void drawRectangles(sf::RenderWindow &window, bool isWin)
     text.setString("YOU WIN!");
     text.setPosition({0, 0});
     window.draw(text);
-    int timeTaken = std::round(elapsed1.asSeconds());
+    int timeTaken = (elapsed1.asSeconds());
     text.setString(std::to_string(timeTaken));
     text.setPosition({0, 100});
     window.draw(text);
