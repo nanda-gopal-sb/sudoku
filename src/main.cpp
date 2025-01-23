@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <iostream>
 #include <stdlib.h>
 #include <string>
 #include <vector>
@@ -17,9 +18,38 @@ struct Cell {
     canBeChanged = false;
   }
 };
+bool unUsedInBox(std::vector<Cell> &grid, int rowStart, int colStart, int num) {
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 3; j++) {
+      if (grid[(rowStart + i) + (colStart + j) * 9].number == num) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+bool unUsedInCol(std::vector<Cell> &grid, int j, int num) {
+  for (int i = 0; i < 9; i++) {
+    if (grid[i + j * 9].number == num) {
+      return false;
+    }
+  }
+  return true;
+}
+bool unUsedInRow(std::vector<Cell> &grid, int i, int num) {
+  for (int j = 0; j < 9; j++) {
+    if (grid[i + j * 9].number == num) {
+      return false;
+    }
+  }
+  return true;
+}
+bool checkIfSafe(std::vector<Cell> &grid, int i, int j, int num) {
+  return (unUsedInRow(grid, i, num) && unUsedInCol(grid, j, num) &&
+          unUsedInBox(grid, i - i % 3, j - j % 3, num));
+}
 int isValid(std::vector<Cell> &mat) {
 
-  // Track of numbers in rows, columns, and sub-matrix
   std::vector<std::vector<int>> rows(10, std::vector<int>(10, 0));
   std::vector<std::vector<int>> cols(10, std::vector<int>(10, 0));
   std::vector<std::vector<int>> subMat(10, std::vector<int>(10, 0));
@@ -60,26 +90,7 @@ int isValid(std::vector<Cell> &mat) {
   return true;
 }
 std::vector<Cell> cells;
-std::vector<Cell> solution;
 sf::Time elapsed1; // this variable for storing the time elapsed
-bool isSafe(std::vector<Cell> &grid, int row, int col, int num) {
-
-  for (int x = 0; x <= 8; x++)
-    if (grid[row + x * 9].number == num)
-      return false;
-
-  for (int x = 0; x <= 8; x++)
-    if (grid[x + col * 9].number == num)
-      return false;
-
-  int startRow = row - row % 3, startCol = col - col % 3;
-
-  for (int i = 0; i < 3; i++)
-    for (int j = 0; j < 3; j++)
-      if (grid[(i + startRow) + (j + startCol) * 9].number == num)
-        return false;
-  return true;
-}
 bool solveSudoku(std::vector<Cell> &grid, int row, int col) {
   if (row == 9 - 1 && col == 9)
     return true;
@@ -94,7 +105,7 @@ bool solveSudoku(std::vector<Cell> &grid, int row, int col) {
 
   for (int num = 1; num <= 9; num++) {
 
-    if (isSafe(grid, row, col, num)) {
+    if (checkIfSafe(grid, row, col, num)) {
 
       grid[row + col * 9].number = num;
 
@@ -105,16 +116,6 @@ bool solveSudoku(std::vector<Cell> &grid, int row, int col) {
     grid[row + col * 9].number = 0;
   }
   return false;
-}
-bool unUsedInBox(std::vector<Cell> &grid, int rowStart, int colStart, int num) {
-  for (int i = 0; i < 3; i++) {
-    for (int j = 0; j < 3; j++) {
-      if (grid[(rowStart + i) + (colStart + j) * 9].number == num) {
-        return false;
-      }
-    }
-  }
-  return true;
 }
 void fillBox(std::vector<Cell> &grid, int row, int col) {
   int num;
@@ -128,26 +129,6 @@ void fillBox(std::vector<Cell> &grid, int row, int col) {
   }
 }
 
-bool unUsedInRow(std::vector<Cell> &grid, int i, int num) {
-  for (int j = 0; j < 9; j++) {
-    if (grid[i + j * 9].number == num) {
-      return false;
-    }
-  }
-  return true;
-}
-bool unUsedInCol(std::vector<Cell> &grid, int j, int num) {
-  for (int i = 0; i < 9; i++) {
-    if (grid[i + j * 9].number == num) {
-      return false;
-    }
-  }
-  return true;
-}
-bool checkIfSafe(std::vector<Cell> &grid, int i, int j, int num) {
-  return (unUsedInRow(grid, i, num) && unUsedInCol(grid, j, num) &&
-          unUsedInBox(grid, i - i % 3, j - j % 3, num));
-}
 void fillDiagonal(std::vector<Cell> &grid) {
   for (int i = 0; i < 9; i = i + 3) {
 
@@ -171,7 +152,6 @@ void removeKDigits(std::vector<Cell> &grid, int k) {
 void sudokuGenerator(int k) {
   fillDiagonal(cells);
   solveSudoku(cells, 0, 0);
-  solution = cells;
   removeKDigits(cells, 3);
 }
 
@@ -193,50 +173,83 @@ int getMousPos(sf::RenderWindow &window) {
     cells[mouse_x + mouse_y * 9].isSelected = true;
   return (mouse_x + mouse_y * 9);
 }
-void drawRectangles(sf::RenderWindow &window, bool isWin) {
-  sf::Font font("assests/Greek-Freak.ttf");
-  sf::Text text(font);
-  text.setCharacterSize(64);
-  text.setFillColor(sf::Color::Black);
-  if (isWin) {
-    text.setFillColor(sf::Color::White);
-    text.setString("YOU WIN!");
-    text.setPosition({0, 0});
+
+void startScreen(bool startedPlaying, sf::RenderWindow &window) {
+  if (!startedPlaying) {
+    sf::RectangleShape line(sf::Vector2f(5, 1500));
+    line.setPosition({0, 100});
+    // line.rotate(sf::degrees(90));
+    sf::RectangleShape play({90, 60});
+    play.setPosition({300, 300});
+    play.setFillColor(sf::Color::White);
+    sf::Font font("assests/Greek-Freak.ttf");
+    sf::Text text(font);
+    text.setCharacterSize(40);
+    text.setFillColor(sf::Color::Black);
+    text.setString("PLAY");
+    window.draw(play);
+    text.setPosition({300, 300});
     window.draw(text);
-    int timeTaken = (elapsed1.asSeconds());
-    text.setString(std::to_string(timeTaken));
-    text.setPosition({0, 100});
-    window.draw(text);
-    return;
+    window.draw(line);
   }
-  sf::RectangleShape rectangle({CELL_SIZE, CELL_SIZE});
-  for (int i = 0; i < 9; i++) {
-    for (int j = 0; j < 9; j++) {
-      if (cells[i + j * 9].isSelected) {
-        rectangle.setFillColor(sf::Color(99, 99, 99));
-      } else
-        rectangle.setFillColor(sf::Color::White);
-      if ((j % 3 == 0 && j != 0) || (i % 3 == 0 && i != 0)) {
-        rectangle.setOutlineThickness(6);
-        rectangle.setOutlineColor(sf::Color::Black);
-        rectangle.setPosition({float(CELL_SIZE * i), float(CELL_SIZE * j)});
-        window.draw(rectangle);
-      } else {
+}
+void drawRectangles(sf::RenderWindow &window, bool isWin, bool isStarted) {
+  if (isStarted) {
+    sf::Font font("assests/Greek-Freak.ttf");
+    sf::Text text(font);
+    text.setCharacterSize(64);
+    text.setFillColor(sf::Color::Black);
+    if (isWin) {
+      text.setFillColor(sf::Color::White);
+      text.setString("YOU WIN!");
+      text.setPosition({0, 0});
+      window.draw(text);
+      int timeTaken = (elapsed1.asSeconds());
+      text.setString(std::to_string(timeTaken));
+      text.setPosition({0, 100});
+      window.draw(text);
+      return;
+    }
+    sf::RectangleShape rectangle({CELL_SIZE, CELL_SIZE});
+    sf::RectangleShape line({5, 900});
+    line.setFillColor(sf::Color::Black);
+    for (int i = 0; i < 9; i++) {
+      for (int j = 0; j < 9; j++) {
+        if (cells[i + j * 9].isSelected) {
+          rectangle.setFillColor(sf::Color(99, 99, 99));
+        } else
+          rectangle.setFillColor(sf::Color::White);
+
+        /*  rectangle.setOutlineThickness(6);*/
+        /*  rectangle.setOutlineColor(sf::Color::Black);*/
+        /*  rectangle.setPosition({float(CELL_SIZE * i), float(CELL_SIZE *
+         * j)});*/
+        /*  window.draw(rectangle);*/
+        /*} else {*/
         rectangle.setOutlineThickness(1);
         rectangle.setOutlineColor(sf::Color::Black);
         rectangle.setPosition({float(CELL_SIZE * i), float(CELL_SIZE * j)});
         window.draw(rectangle);
-      }
-      text.setPosition({float(CELL_SIZE * i), float(CELL_SIZE * j)});
-      if (cells[i + j * 9].number != 0) {
-        text.setString(std::to_string(cells[i + j * 9].number));
-        window.draw(text);
+        text.setPosition({float(CELL_SIZE * i), float(CELL_SIZE * j)});
+        if (cells[i + j * 9].number != 0) {
+          text.setString(std::to_string(cells[i + j * 9].number));
+          window.draw(text);
+        }
+        if ((i % 3 == 0 && i != 0)) {
+          line.setPosition({float(CELL_SIZE * i) - 2, 0});
+          window.draw(line);
+        }
+        if ((j % 3 == 0 && j != 0)) {
+          line.setPosition({float(CELL_SIZE * j) - 2, 0});
+          window.draw(line);
+        }
       }
     }
   }
 }
 
 int main() {
+  bool start = false;
   srand(time(0));
   fillCell();
   sf::Clock clock;
@@ -253,6 +266,13 @@ int main() {
         isWin = true;
         elapsed1 = clock.getElapsedTime();
         clock.stop();
+      }
+      if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && !start) {
+        int x = sf::Mouse::getPosition(window).x;
+        int y = sf::Mouse::getPosition(window).y;
+        if ((x < 380 && x > 300) && (y < 380 && y > 300)) {
+          start = true;
+        }
       }
       if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
         if (index != -1)
@@ -331,7 +351,8 @@ int main() {
       }
     }
     window.clear();
-    drawRectangles(window, isWin);
+    startScreen(start, window);
+    drawRectangles(window, isWin, start);
     window.display();
   }
 }
