@@ -19,7 +19,7 @@ void sudokuGenerator(int k) {
   Sudoku *suk = new Sudoku();
   suk->fillDiagonal(cells);
   suk->solveSudoku(cells, 0, 0);
-  suk->removeKDigits(cells, k);
+  suk->removeKDigits(cells, 3);
   delete suk;
 }
 
@@ -37,7 +37,7 @@ void fillCell() {
           Cell(b, a)); // inversed as SFML has invered axis for some reason
     }
   }
-  sudokuGenerator(50);
+  sudokuGenerator(10);
 }
 int getMousPos(sf::RenderWindow &window) {
   int mouse_x = sf::Mouse::getPosition(window).x / CELL_SIZE;
@@ -122,8 +122,7 @@ void drawRectangles(sf::RenderWindow &window, bool isWin, bool isStarted) {
     }
   }
 }
-void drawTime(sf::RenderWindow &window, sf::Time time, bool isStart) {
-  if(isStart){
+void drawTime(sf::RenderWindow &window, sf::Time time) {
   text.setPosition({348, 0});
   text.setFillColor(sf::Color::White);
   std::string str = std::to_string(time.asSeconds());
@@ -135,14 +134,12 @@ void drawTime(sf::RenderWindow &window, sf::Time time, bool isStart) {
   }
   text.setString(newStr);
   window.draw(text);
-  }
 }
 int main() {
   bool start = false;
   srand(time(0));
   fillCell();
   sf::Clock clock;
-  clock.stop();
   bool isWin = false;
   auto window =
       sf::RenderWindow(sf::VideoMode({9 * 80, 9 * 80 + offset}), "Sudoku");
@@ -165,7 +162,6 @@ int main() {
         if ((x < 380 && x > 300) && (y < 380 && y > 300)) {
           start = true;
           clock.reset();
-          clock.start();
         }
       }
       if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
@@ -246,7 +242,7 @@ int main() {
     }
     window.clear();
     startScreen(start, window);
-    drawTime(window, elapsed1,start);
+    drawTime(window, elapsed1);
     drawRectangles(window, isWin, start);
     window.display();
   }
