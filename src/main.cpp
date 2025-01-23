@@ -1,10 +1,13 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Window/WindowBase.hpp>
 #include <iostream>
 #include <stdlib.h>
 #include <string>
 #include <vector>
 
 #define CELL_SIZE 80
+#define offset 240
+sf::Texture texture("assests/bg.png");
 struct Cell {
   int number = 0;
   int x; // obvious
@@ -169,6 +172,10 @@ void fillCell() {
 int getMousPos(sf::RenderWindow &window) {
   int mouse_x = sf::Mouse::getPosition(window).x / CELL_SIZE;
   int mouse_y = sf::Mouse::getPosition(window).y / CELL_SIZE;
+  mouse_y = mouse_y - 3 ;
+  if(mouse_y<0){
+    return 0;
+  }
   if (cells[mouse_x + mouse_y * 9].canBeChanged)
     cells[mouse_x + mouse_y * 9].isSelected = true;
   return (mouse_x + mouse_y * 9);
@@ -176,42 +183,35 @@ int getMousPos(sf::RenderWindow &window) {
 
 void startScreen(bool startedPlaying, sf::RenderWindow &window) {
   if (!startedPlaying) {
-    sf::RectangleShape line(sf::Vector2f(5, 1500));
-    line.setPosition({0, 100});
-    // line.rotate(sf::degrees(90));
     sf::RectangleShape play({90, 60});
     play.setPosition({300, 300});
     play.setFillColor(sf::Color::White);
-    sf::Font font("assests/Greek-Freak.ttf");
+    sf::Font font("assests/type.ttf");
     sf::Text text(font);
-    text.setCharacterSize(40);
+    text.setCharacterSize(30);
     text.setFillColor(sf::Color::Black);
     text.setString("PLAY");
     window.draw(play);
     text.setPosition({300, 300});
     window.draw(text);
-    window.draw(line);
   }
 }
 void drawRectangles(sf::RenderWindow &window, bool isWin, bool isStarted) {
   if (isStarted) {
-    sf::Font font("assests/Greek-Freak.ttf");
+    sf::Font font("assests/type.ttf");
     sf::Text text(font);
     text.setCharacterSize(64);
     text.setFillColor(sf::Color::Black);
     if (isWin) {
-      text.setFillColor(sf::Color::White);
-      text.setString("YOU WIN!");
-      text.setPosition({0, 0});
-      window.draw(text);
       int timeTaken = (elapsed1.asSeconds());
-      text.setString(std::to_string(timeTaken));
-      text.setPosition({0, 100});
+      text.setFillColor(sf::Color::White);
+      text.setPosition({200,300});
+      text.setString("YOU WIN!\n" + std::to_string(timeTaken)+" seconds");
       window.draw(text);
       return;
     }
     sf::RectangleShape rectangle({CELL_SIZE, CELL_SIZE});
-    sf::RectangleShape line({5, 900});
+    sf::RectangleShape line({5, 1100});
     line.setFillColor(sf::Color::Black);
     for (int i = 0; i < 9; i++) {
       for (int j = 0; j < 9; j++) {
@@ -228,19 +228,24 @@ void drawRectangles(sf::RenderWindow &window, bool isWin, bool isStarted) {
         /*} else {*/
         rectangle.setOutlineThickness(1);
         rectangle.setOutlineColor(sf::Color::Black);
-        rectangle.setPosition({float(CELL_SIZE * i), float(CELL_SIZE * j)});
+        rectangle.setPosition({float(CELL_SIZE * i), float(CELL_SIZE * j)+offset});
+        rectangle.setTexture(&texture);
         window.draw(rectangle);
-        text.setPosition({float(CELL_SIZE * i), float(CELL_SIZE * j)});
+        text.setPosition({float(CELL_SIZE * i), float(CELL_SIZE * j)+offset});
         if (cells[i + j * 9].number != 0) {
-          text.setString(std::to_string(cells[i + j * 9].number));
+          std::string String = std::to_string(cells[i+j*9].number);
+          String = " " + String;
+          text.setString(String);
           window.draw(text);
         }
         if ((i % 3 == 0 && i != 0)) {
-          line.setPosition({float(CELL_SIZE * i) - 2, 0});
+          line.setSize({5,1100});
+          line.setPosition({float(CELL_SIZE * i - 5), 0});
           window.draw(line);
         }
-        if ((j % 3 == 0 && j != 0)) {
-          line.setPosition({float(CELL_SIZE * j) - 2, 0});
+        else if ((j % 3 == 0 && j != 0)) {
+          line.setSize({1100,5});
+          line.setPosition({0, float(CELL_SIZE*j)+offset});
           window.draw(line);
         }
       }
@@ -254,7 +259,7 @@ int main() {
   fillCell();
   sf::Clock clock;
   bool isWin = false;
-  auto window = sf::RenderWindow(sf::VideoMode({9 * 80u, 9 * 80u}), "Sudoku");
+  auto window = sf::RenderWindow(sf::VideoMode({9 * 80 , 9 * 80 + offset}), "Sudoku");
   window.setFramerateLimit(144);
   int index = -1;
   while (window.isOpen()) {
