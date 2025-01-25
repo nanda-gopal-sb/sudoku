@@ -1,6 +1,5 @@
 #include "./sudoku.cpp"
 #include <SFML/Graphics.hpp>
-#include <SFML/Graphics/Color.hpp>
 #include <ctime>
 #include <iostream>
 #include <stdlib.h>
@@ -33,7 +32,19 @@ bool checkForVictory() {
 }
 void pencilAppend(std::string numToAdd, int index) {
   cells[index].isPencil = true;
-  cells[index].pencilNums.append(numToAdd);
+  int found = cells[index].pencilNums.find(numToAdd);
+  if (found == -1) {
+    cells[index].pencilNums.append(numToAdd);
+    int len = cells[index].pencilNums.size();
+    if (len == 5 || len == 11) {
+      cells[index].pencilNums.append("\n");
+    } else {
+      cells[index].pencilNums.append(" ");
+    }
+  } else {
+
+    cells[index].pencilNums = cells[index].pencilNums.erase(found, 2);
+  }
 }
 void clearSelected(int index) { cells[index].isSelected = false; }
 void fillCell() {
@@ -42,7 +53,7 @@ void fillCell() {
       cells.push_back(Cell(b, a));
     }
   }
-  sudokuGenerator(50);
+  sudokuGenerator(2);
 }
 int getMousPos(sf::RenderWindow &window) {
   int mouse_x = sf::Mouse::getPosition(window).x / CELL_SIZE;
@@ -58,7 +69,6 @@ int getMousPos(sf::RenderWindow &window) {
 
 void startScreen(bool startedPlaying, sf::RenderWindow &window) {
   if (!startedPlaying) {
-
     sf::RectangleShape play({90, 60});
     play.setPosition({300, 300});
     play.setFillColor(sf::Color::White);
@@ -72,9 +82,8 @@ void startScreen(bool startedPlaying, sf::RenderWindow &window) {
 }
 void drawRectangles(sf::RenderWindow &window, bool isWin, bool isStarted) {
   if (isStarted) {
-    text.setCharacterSize(64);
-    text.setFillColor(sf::Color::Black);
     if (isWin) {
+      window.clear();
       int timeTaken = (elapsed1.asSeconds());
       text.setFillColor(sf::Color::White);
       text.setPosition({200, 300});
@@ -99,26 +108,27 @@ void drawRectangles(sf::RenderWindow &window, bool isWin, bool isStarted) {
         rectangle.setTexture(&texture);
         window.draw(rectangle);
         text.setPosition({float(CELL_SIZE * i), float(CELL_SIZE * j) + offset});
-          if (cells[i + j * 9].canBeChanged && !cells[i + j * 9].isPencil && cells[i+j*9].number!=0) {
-            text.setFillColor(sf::Color::Black);
-            std::string String = std::to_string(cells[i + j * 9].number);
-            String = " " + String;
-            text.setString(String);
-            window.draw(text);
-          } else if (cells[i + j * 9].isPencil) {
-            text.setCharacterSize(30);
-            text.setFillColor(sf::Color::Black);
-            //text.setString("1");
-             text.setString(cells[i+j*9].pencilNums);
-            window.draw(text);
-          } else if(cells[i+j*9].number!=0) {
-            std::string String = std::to_string(cells[i + j * 9].number);
-            String = " " + String;
-            text.setString(String);
-            text.setCharacterSize(60);
-            text.setFillColor(sf::Color(99, 62, 21));
-            window.draw(text);
-          }
+        if (cells[i + j * 9].canBeChanged && !cells[i + j * 9].isPencil &&
+            cells[i + j * 9].number != 0) {
+          text.setCharacterSize(64);
+          text.setFillColor(sf::Color::Black);
+          std::string String = std::to_string(cells[i + j * 9].number);
+          String = " " + String;
+          text.setString(String);
+          window.draw(text);
+        } else if (cells[i + j * 9].isPencil) {
+          text.setCharacterSize(21);
+          text.setFillColor(sf::Color::Black);
+          text.setString(cells[i + j * 9].pencilNums);
+          window.draw(text);
+        } else if (cells[i + j * 9].number != 0) {
+          std::string String = std::to_string(cells[i + j * 9].number);
+          String = " " + String;
+          text.setString(String);
+          text.setCharacterSize(64);
+          text.setFillColor(sf::Color(99, 62, 21));
+          window.draw(text);
+        }
         if ((i % 3 == 0 && i != 0)) {
           line.setSize({5, 1100});
           line.setPosition({float(CELL_SIZE * i - 5), 0});
@@ -203,78 +213,153 @@ int main() {
         index = getMousPos(window);
       }
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Num1)) {
-        if (index != -1) {
+        if (index != -1 && cells[index].canBeChanged) {
           if (isPencil) {
             pencilAppend("1", index);
-            std::cout << cells[index].pencilNums;
             clearSelected(index);
             index = -1;
           } else {
             cells[index].number = 1;
+            cells[index].isPencil = false;
+            cells[index].pencilNums = "";
             clearSelected(index);
             index = -1;
           }
         }
       }
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Num2)) {
-        if (index != -1) {
-          cells[index].number = 2;
-          clearSelected(index);
-          index = -1;
+        if (index != -1 && cells[index].canBeChanged) {
+          if (isPencil) {
+            pencilAppend("2", index);
+            clearSelected(index);
+            index = -1;
+          } else {
+            cells[index].number = 2;
+            cells[index].isPencil = false;
+            cells[index].pencilNums = "";
+
+            clearSelected(index);
+            index = -1;
+          }
         }
       }
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Num3)) {
-        if (index != -1) {
-          cells[index].number = 3;
-          clearSelected(index);
-          index = -1;
+        if (index != -1 && cells[index].canBeChanged) {
+          if (isPencil) {
+            pencilAppend("3", index);
+            clearSelected(index);
+            index = -1;
+          } else {
+            cells[index].number = 3;
+            cells[index].isPencil = false;
+            cells[index].pencilNums = "";
+
+            clearSelected(index);
+            index = -1;
+          }
         }
       }
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Num4)) {
-        if (index != -1) {
-          cells[index].number = 4;
-          clearSelected(index);
-          index = -1;
+        if (index != -1 && cells[index].canBeChanged) {
+          if (isPencil) {
+            pencilAppend("4", index);
+            clearSelected(index);
+            index = -1;
+          } else {
+            cells[index].number = 4;
+            cells[index].isPencil = false;
+            cells[index].pencilNums = "";
+
+            clearSelected(index);
+            index = -1;
+          }
         }
       }
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Num5)) {
-        if (index != -1) {
-          cells[index].number = 5;
-          clearSelected(index);
-          index = -1;
+        if (index != -1 && cells[index].canBeChanged) {
+          if (isPencil) {
+            pencilAppend("5", index);
+            clearSelected(index);
+            index = -1;
+          } else {
+            cells[index].number = 5;
+            clearSelected(index);
+            cells[index].isPencil = false;
+            cells[index].pencilNums = "";
+
+            index = -1;
+          }
         }
       }
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Num6)) {
-        if (index != -1) {
-          cells[index].number = 6;
-          clearSelected(index);
-          index = -1;
+        if (index != -1 && cells[index].canBeChanged) {
+          if (isPencil) {
+            pencilAppend("6", index);
+            clearSelected(index);
+            index = -1;
+          } else {
+            cells[index].number = 6;
+            cells[index].isPencil = false;
+            cells[index].pencilNums = "";
+
+            clearSelected(index);
+            index = -1;
+          }
         }
       }
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Num7)) {
-        if (index != -1) {
-          cells[index].number = 7;
-          clearSelected(index);
-          index = -1;
+        if (index != -1 && cells[index].canBeChanged) {
+          if (isPencil) {
+            pencilAppend("7", index);
+            clearSelected(index);
+            index = -1;
+          } else {
+            cells[index].number = 7;
+            cells[index].isPencil = false;
+            cells[index].pencilNums = "";
+
+            clearSelected(index);
+            index = -1;
+          }
         }
       }
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Num8)) {
-        if (index != -1) {
-          cells[index].number = 8;
-          clearSelected(index);
-          index = -1;
+        if (index != -1 && cells[index].canBeChanged) {
+          if (isPencil) {
+            pencilAppend("8", index);
+            clearSelected(index);
+            index = -1;
+          } else {
+            cells[index].number = 8;
+            cells[index].isPencil = false;
+            cells[index].pencilNums = "";
+
+            clearSelected(index);
+            index = -1;
+          }
         }
       }
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Num9)) {
-        if (index != -1) {
-          cells[index].number = 9;
-          clearSelected(index);
-          index = -1;
+        if (index != -1 && cells[index].canBeChanged) {
+          if (isPencil) {
+            pencilAppend("9", index);
+            clearSelected(index);
+            index = -1;
+          } else {
+            cells[index].number = 9;
+            cells[index].isPencil = false;
+            cells[index].pencilNums = "";
+
+            clearSelected(index);
+            index = -1;
+          }
         }
       }
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Num0)) {
         if (index != -1) {
           cells[index].number = 0;
+          cells[index].isPencil = false;
+          cells[index].pencilNums = "";
           clearSelected(index);
           index = -1;
         }

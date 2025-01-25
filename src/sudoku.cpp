@@ -1,6 +1,6 @@
-#include <vector>
-#include <string>
 #include <stdlib.h>
+#include <string>
+#include <vector>
 struct Cell {
   int number = 0;
   int x; // obvious
@@ -19,7 +19,8 @@ struct Cell {
 };
 class Sudoku {
 public:
-  bool unUsedInBox(std::vector<Cell> &grid, int rowStart, int colStart, int num) {
+  bool unUsedInBox(std::vector<Cell> &grid, int rowStart, int colStart,
+                   int num) {
     for (int i = 0; i < 3; i++) {
       for (int j = 0; j < 3; j++) {
         if (grid[(rowStart + i) + (colStart + j) * 9].number == num) {
@@ -90,7 +91,7 @@ public:
     }
     return true;
   }
-   bool solveSudoku(std::vector<Cell> &grid, int row, int col) {
+  bool solveSudoku(std::vector<Cell> &grid, int row, int col) {
     if (row == 9 - 1 && col == 9)
       return true;
 
@@ -130,7 +131,6 @@ public:
 
   void fillDiagonal(std::vector<Cell> &grid) {
     for (int i = 0; i < 9; i = i + 3) {
-
       fillBox(grid, i, i);
     }
   }
@@ -149,5 +149,3 @@ public:
     }
   }
 };
-
-
