@@ -13,17 +13,9 @@ struct Cell {
     canBeChanged = false;
   }
 };
-
-
-
-
-
-
-
 class Sudoku {
 public:
-  bool unUsedInBox(std::vector<Cell> &grid, int rowStart, int colStart,
-                   int num) {
+  bool unUsedInBox(std::vector<Cell> &grid, int rowStart, int colStart, int num) {
     for (int i = 0; i < 3; i++) {
       for (int j = 0; j < 3; j++) {
         if (grid[(rowStart + i) + (colStart + j) * 9].number == num) {

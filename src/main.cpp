@@ -3,7 +3,6 @@
 #include <iostream>
 #include <stdlib.h>
 #include <string>
-#include <vector>
 
 #include "./sudoku.cpp"
 
@@ -13,8 +12,8 @@ sf::Texture texture("assests/bg.png");
 sf::Font font("assests/type.ttf");
 sf::Text text(font);
 std::vector<Cell> cells;
-sf::Time elapsed1; // this variable for storing the time elapsed
-
+sf::Time elapsed1; 
+sf::Image image ("assests/sudoku.png");
 void sudokuGenerator(int k) {
   Sudoku *suk = new Sudoku();
   suk->fillDiagonal(cells);
@@ -34,7 +33,7 @@ void fillCell() {
   for (int a = 0; a < 9; a++) {
     for (int b = 0; b < 9; b++) {
       cells.push_back(
-          Cell(b, a)); // inversed as SFML has invered axis for some reason
+          Cell(b, a));
     }
   }
   sudokuGenerator(50);
@@ -53,6 +52,7 @@ int getMousPos(sf::RenderWindow &window) {
 
 void startScreen(bool startedPlaying, sf::RenderWindow &window) {
   if (!startedPlaying) {
+      
     sf::RectangleShape play({90, 60});
     play.setPosition({300, 300});
     play.setFillColor(sf::Color::White);
@@ -83,8 +83,10 @@ void drawRectangles(sf::RenderWindow &window, bool isWin, bool isStarted) {
       for (int j = 0; j < 9; j++) {
         if (cells[i + j * 9].isSelected) {
           rectangle.setFillColor(sf::Color(99, 99, 99));
-        } else
-          rectangle.setFillColor(sf::Color::White);
+        }
+        else {
+            rectangle.setFillColor(sf::Color::White);
+        }
         rectangle.setOutlineThickness(1);
         rectangle.setOutlineColor(sf::Color::Black);
         rectangle.setPosition(
@@ -124,6 +126,7 @@ void drawRectangles(sf::RenderWindow &window, bool isWin, bool isStarted) {
 }
 void drawTime(sf::RenderWindow &window, sf::Time time, bool isStart) {
   if(isStart){
+     
   text.setPosition({348, 0});
   text.setFillColor(sf::Color::White);
   std::string str = std::to_string(time.asSeconds());
@@ -144,8 +147,8 @@ int main() {
   sf::Clock clock;
   clock.stop();
   bool isWin = false;
-  auto window =
-      sf::RenderWindow(sf::VideoMode({9 * 80, 9 * 80 + offset}), "Sudoku");
+  sf::RenderWindow window = sf::RenderWindow(sf::VideoMode({9 * 80, 9 * 80 + offset}), "Sudoku");
+  window.setIcon(image.getSize(), image.getPixelsPtr());
   window.setFramerateLimit(144);
   int index = -1;
   while (window.isOpen()) {
@@ -158,6 +161,9 @@ int main() {
         isWin = true;
         elapsed1 = clock.getElapsedTime();
         clock.stop();
+      }
+      if (event->is<sf::Event::Resized>()) {
+          window.setSize({ 9 * 80, 9 * 80 + offset });
       }
       if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && !start) {
         int x = sf::Mouse::getPosition(window).x;
