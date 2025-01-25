@@ -1,10 +1,10 @@
+#include "./sudoku.cpp"
 #include <SFML/Graphics.hpp>
+#include <SFML/Graphics/Color.hpp>
 #include <ctime>
 #include <iostream>
 #include <stdlib.h>
 #include <string>
-
-#include "./sudoku.cpp"
 
 #define CELL_SIZE 80
 #define offset 240
@@ -12,8 +12,11 @@ sf::Texture texture("assests/bg.png");
 sf::Font font("assests/type.ttf");
 sf::Text text(font);
 std::vector<Cell> cells;
-sf::Time elapsed1; 
-sf::Image image ("assests/sudoku.png");
+sf::Time elapsed1;
+sf::Image image("assests/sudoku.png");
+sf::Texture drawing("assests/drawing.png");
+sf::Texture notDrawing("assests/not-drawing.png");
+sf::Sprite icon(notDrawing);
 void sudokuGenerator(int k) {
   Sudoku *suk = new Sudoku();
   suk->fillDiagonal(cells);
@@ -28,12 +31,15 @@ bool checkForVictory() {
   delete suk;
   return win;
 }
+void pencilAppend(std::string numToAdd, int index) {
+  cells[index].isPencil = true;
+  cells[index].pencilNums.append(numToAdd);
+}
 void clearSelected(int index) { cells[index].isSelected = false; }
 void fillCell() {
   for (int a = 0; a < 9; a++) {
     for (int b = 0; b < 9; b++) {
-      cells.push_back(
-          Cell(b, a));
+      cells.push_back(Cell(b, a));
     }
   }
   sudokuGenerator(50);
@@ -52,7 +58,7 @@ int getMousPos(sf::RenderWindow &window) {
 
 void startScreen(bool startedPlaying, sf::RenderWindow &window) {
   if (!startedPlaying) {
-      
+
     sf::RectangleShape play({90, 60});
     play.setPosition({300, 300});
     play.setFillColor(sf::Color::White);
@@ -83,9 +89,8 @@ void drawRectangles(sf::RenderWindow &window, bool isWin, bool isStarted) {
       for (int j = 0; j < 9; j++) {
         if (cells[i + j * 9].isSelected) {
           rectangle.setFillColor(sf::Color(99, 99, 99));
-        }
-        else {
-            rectangle.setFillColor(sf::Color::White);
+        } else {
+          rectangle.setFillColor(sf::Color::White);
         }
         rectangle.setOutlineThickness(1);
         rectangle.setOutlineColor(sf::Color::Black);
@@ -94,23 +99,26 @@ void drawRectangles(sf::RenderWindow &window, bool isWin, bool isStarted) {
         rectangle.setTexture(&texture);
         window.draw(rectangle);
         text.setPosition({float(CELL_SIZE * i), float(CELL_SIZE * j) + offset});
-        if (cells[i + j * 9].number != 0) {
-          if (cells[i + j * 9].canBeChanged) {
+          if (cells[i + j * 9].canBeChanged && !cells[i + j * 9].isPencil && cells[i+j*9].number!=0) {
             text.setFillColor(sf::Color::Black);
             std::string String = std::to_string(cells[i + j * 9].number);
             String = " " + String;
             text.setString(String);
             window.draw(text);
-          }
-          else{
+          } else if (cells[i + j * 9].isPencil) {
+            text.setCharacterSize(30);
+            text.setFillColor(sf::Color::Black);
+            //text.setString("1");
+             text.setString(cells[i+j*9].pencilNums);
+            window.draw(text);
+          } else if(cells[i+j*9].number!=0) {
             std::string String = std::to_string(cells[i + j * 9].number);
             String = " " + String;
             text.setString(String);
+            text.setCharacterSize(60);
             text.setFillColor(sf::Color(99, 62, 21));
             window.draw(text);
-            
           }
-        }
         if ((i % 3 == 0 && i != 0)) {
           line.setSize({5, 1100});
           line.setPosition({float(CELL_SIZE * i - 5), 0});
@@ -125,29 +133,33 @@ void drawRectangles(sf::RenderWindow &window, bool isWin, bool isStarted) {
   }
 }
 void drawTime(sf::RenderWindow &window, sf::Time time, bool isStart) {
-  if(isStart){
-     
-  text.setPosition({348, 0});
-  text.setFillColor(sf::Color::White);
-  std::string str = std::to_string(time.asSeconds());
-  std::string newStr = "";
-  for (int i = 0; i < str.length(); i++) {
-    if (str[i] == '.')
-      break;
-    newStr.append(1, str[i]);
-  }
-  text.setString(newStr);
-  window.draw(text);
+  if (isStart) {
+    icon.scale({1, 1});
+    icon.setPosition({30, 100});
+    window.draw(icon);
+    text.setPosition({348, 0});
+    text.setFillColor(sf::Color::White);
+    std::string str = std::to_string(time.asSeconds());
+    std::string newStr = "";
+    for (int i = 0; i < str.length(); i++) {
+      if (str[i] == '.')
+        break;
+      newStr.append(1, str[i]);
+    }
+    text.setString(newStr);
+    window.draw(text);
   }
 }
 int main() {
+  bool isPencil = false;
   bool start = false;
   srand(time(0));
   fillCell();
   sf::Clock clock;
   clock.stop();
   bool isWin = false;
-  sf::RenderWindow window = sf::RenderWindow(sf::VideoMode({9 * 80, 9 * 80 + offset}), "Sudoku");
+  sf::RenderWindow window =
+      sf::RenderWindow(sf::VideoMode({9 * 80, 9 * 80 + offset}), "Sudoku");
   window.setIcon(image.getSize(), image.getPixelsPtr());
   window.setFramerateLimit(144);
   int index = -1;
@@ -163,7 +175,7 @@ int main() {
         clock.stop();
       }
       if (event->is<sf::Event::Resized>()) {
-          window.setSize({ 9 * 80, 9 * 80 + offset });
+        window.setSize({9 * 80, 9 * 80 + offset});
       }
       if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && !start) {
         int x = sf::Mouse::getPosition(window).x;
@@ -177,13 +189,31 @@ int main() {
       if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
         if (index != -1)
           clearSelected(index);
+        int x = sf::Mouse::getPosition(window).x;
+        int y = sf::Mouse::getPosition(window).y;
+        if ((x >= 30 && y >= 100 && y <= 200 && x <= 120)) {
+          if (isPencil) {
+            icon.setTexture(notDrawing);
+            isPencil = false;
+          } else {
+            icon.setTexture(drawing);
+            isPencil = true;
+          }
+        }
         index = getMousPos(window);
       }
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Num1)) {
         if (index != -1) {
-          cells[index].number = 1;
-          clearSelected(index);
-          index = -1;
+          if (isPencil) {
+            pencilAppend("1", index);
+            std::cout << cells[index].pencilNums;
+            clearSelected(index);
+            index = -1;
+          } else {
+            cells[index].number = 1;
+            clearSelected(index);
+            index = -1;
+          }
         }
       }
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Num2)) {
@@ -252,7 +282,7 @@ int main() {
     }
     window.clear();
     startScreen(start, window);
-    drawTime(window, elapsed1,start);
+    drawTime(window, elapsed1, start);
     drawRectangles(window, isWin, start);
     window.display();
   }

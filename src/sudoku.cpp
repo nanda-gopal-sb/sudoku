@@ -1,14 +1,18 @@
 #include <vector>
+#include <string>
 #include <stdlib.h>
 struct Cell {
   int number = 0;
   int x; // obvious
   int y; // obvious
   bool isSelected;
+  bool isPencil;
   bool canBeChanged;
+  std::string pencilNums;
   Cell(int x1, int y1) {
     x = x1;
     y = y1;
+    isPencil = false;
     isSelected = false;
     canBeChanged = false;
   }
