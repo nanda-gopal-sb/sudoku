@@ -6,15 +6,15 @@ For now, its just a simple sudoku game with minimal graphics, however I do plan 
 ```bash
 sudo apt update &&
 sudo apt install \
-		libxrandr-dev \
-		libxcursor-dev \
-		libudev-dev \
-		libfreetype-dev \
-		libflac-dev \
-		libvorbis-dev \
-		libgl1-mesa-dev \
-		libegl1-mesa-dev \
-		libfreetype-dev
+	libxrandr-dev \
+	libxcursor-dev \
+	libudev-dev \
+	libfreetype-dev \
+	libflac-dev \
+	libvorbis-dev \
+	libgl1-mesa-dev \
+	libegl1-mesa-dev \
+	libfreetype-dev
 ```
 ### Building
 ```bash
