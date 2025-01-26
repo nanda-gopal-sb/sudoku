@@ -8,6 +8,7 @@ struct Cell {
   bool isSelected;
   bool isPencil;
   bool canBeChanged;
+  bool isHighlight; 
   std::string pencilNums;
   Cell(int x1, int y1) {
     x = x1;
@@ -15,6 +16,7 @@ struct Cell {
     isPencil = false;
     isSelected = false;
     canBeChanged = false;
+    isHighlight = false;
   }
 };
 class Sudoku {
