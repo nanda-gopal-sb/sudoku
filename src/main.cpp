@@ -17,7 +17,7 @@ sf::Time elapsed1;
 sf::Image image("assests/sudoku.png");
 sf::Texture drawing("assests/drawing.png");
 sf::Texture notDrawing("assests/not-drawing.png");
-sf::Sprite icon(notDrawing);
+sf::Sprite pencilIcon(notDrawing);
 void sudokuGenerator(int k) {
   Sudoku *suk = new Sudoku();
   suk->fillDiagonal(cells);
@@ -26,12 +26,16 @@ void sudokuGenerator(int k) {
   delete suk;
 }
 
+/**
+ * Checks if puzzle was solved
+ */
 bool checkForVictory() {
   Sudoku *suk = new Sudoku();
   bool win = suk->isValid(cells);
   delete suk;
   return win;
 }
+
 void pencilAppend(std::string numToAdd, int index) {
   cells[index].isPencil = true;
   int found = cells[index].pencilNums.find(numToAdd);
@@ -49,6 +53,10 @@ void pencilAppend(std::string numToAdd, int index) {
   }
 }
 void clearSelected(int index) { cells[index].isSelected = false; }
+
+/**
+ * Generates a puzzle and stores it in `cells`
+ */
 void fillCell() {
   for (int a = 0; a < 9; a++) {
     for (int b = 0; b < 9; b++) {
@@ -57,10 +65,14 @@ void fillCell() {
   }
   sudokuGenerator(10);
 }
+
+/**
+ * Returns 1D cell index from mouse's relative x y position
+ */
 int getMousPos(sf::RenderWindow &window) {
   int mouse_x = sf::Mouse::getPosition(window).x / CELL_SIZE;
   int mouse_y = sf::Mouse::getPosition(window).y / CELL_SIZE;
-  mouse_y = mouse_y - 3;
+  mouse_y = mouse_y - offset/CELL_SIZE;
   if (mouse_y < 0) {
     return 0;
   }
@@ -74,11 +86,19 @@ void highlight(int num) {
       cells[i].isHighlight = true;
   }
 }
+
+/**
+ * Clears highlighting of all cells
+ */
 void clearHighlight() {
   for (int i = 0; i < 81; i++) {
     cells[i].isHighlight = false;
   }
 }
+
+/**
+ * Shows initial play game screen
+ */
 void startScreen(bool startedPlaying, sf::RenderWindow &window) {
   if (!startedPlaying) {
     text.setCharacterSize(30);
@@ -88,6 +108,10 @@ void startScreen(bool startedPlaying, sf::RenderWindow &window) {
     window.draw(text);
   }
 }
+
+/**
+ * Draw board
+ */
 void drawRectangles(sf::RenderWindow &window, bool isWin, bool isStarted) {
   if (isStarted) {
     if (isWin) {
@@ -99,11 +123,14 @@ void drawRectangles(sf::RenderWindow &window, bool isWin, bool isStarted) {
       window.draw(text);
       return;
     }
+
     sf::RectangleShape rectangle({CELL_SIZE, CELL_SIZE});
-    sf::RectangleShape line({5, 1100});
-    line.setFillColor(sf::Color::Black);
+    sf::RectangleShape subgridSeparator({5, 1100});
+    subgridSeparator.setFillColor(sf::Color::Black);
+
     for (int i = 0; i < 9; i++) {
       for (int j = 0; j < 9; j++) {
+
         if (cells[i + j * 9].isSelected) {
           rectangle.setFillColor(sf::Color(99, 99, 99));
         } else if (cells[i + j * 9].isHighlight) {
@@ -111,12 +138,15 @@ void drawRectangles(sf::RenderWindow &window, bool isWin, bool isStarted) {
         } else {
           rectangle.setFillColor(sf::Color::White);
         }
+
         rectangle.setOutlineThickness(1);
         rectangle.setOutlineColor(sf::Color::Black);
         rectangle.setPosition(
             {float(CELL_SIZE * i), float(CELL_SIZE * j) + offset});
         rectangle.setTexture(&texture);
         window.draw(rectangle);
+
+				// draw inner text
         text.setPosition({float(CELL_SIZE * i), float(CELL_SIZE * j) + offset});
         if (cells[i + j * 9].canBeChanged && !cells[i + j * 9].isPencil &&
             cells[i + j * 9].number != 0) {
@@ -142,28 +172,41 @@ void drawRectangles(sf::RenderWindow &window, bool isWin, bool isStarted) {
           // random
         }
 
+				// draw subgrid separator
         if ((i % 3 == 0 && i != 0)) {
-          line.setSize({5, 1100});
-          line.setPosition({float(CELL_SIZE * i - 5), 0});
-          window.draw(line);
+					// vertical line
+          subgridSeparator.setSize({5, 1100});
+          subgridSeparator.setPosition({float(CELL_SIZE * i - 5), 0});
+          window.draw(subgridSeparator);
         } else if ((j % 3 == 0 && j != 0)) {
-          line.setSize({1100, 5});
-          line.setPosition({0, float(CELL_SIZE * j) + offset});
-          window.draw(line);
+					// horizontal line
+          subgridSeparator.setSize({1100, 5});
+          subgridSeparator.setPosition({0, float(CELL_SIZE * j) + offset});
+          window.draw(subgridSeparator);
         }
       }
     }
   }
 }
+
+/**
+ * shows time on the screen
+ */
 void drawTime(sf::RenderWindow &window, sf::Time time, bool isStart) {
   if (isStart) {
-    icon.scale({1, 1});
-    icon.setPosition({30, 100});
-    window.draw(icon);
+		// show pencil icon
+    pencilIcon.scale({1, 1});
+    pencilIcon.setPosition({30, 100});
+    window.draw(pencilIcon);
+
+
+		////// show time ///////
     text.setPosition({320, 0});
     text.setFillColor(sf::Color::White);
     std::string str = std::to_string(time.asSeconds());
     std::string newStr = "";
+
+		// skip decimal part
     for (int i = 0; i < str.length(); i++) {
       if (str[i] == '.')
         break;
@@ -173,16 +216,24 @@ void drawTime(sf::RenderWindow &window, sf::Time time, bool isStart) {
     window.draw(text);
   }
 }
+
 int main() {
   bool isPencil = false;
   bool start = false;
+  bool isWin = false;
+
   srand(time(0));
   fillCell();
+
   sf::Clock clock;
   clock.stop();
-  bool isWin = false;
-  sf::RenderWindow window =
-      sf::RenderWindow(sf::VideoMode({9 * 80, 9 * 80 + offset}),"Sudoku",sf::Style::Titlebar| sf::Style::Close);
+
+  sf::RenderWindow window = sf::RenderWindow(
+			sf::VideoMode({9 * CELL_SIZE, 9 * CELL_SIZE + offset}),
+			"Sudoku",
+			sf::Style::Titlebar | sf::Style::Close
+	);
+
   window.setIcon(image.getSize(), image.getPixelsPtr());
   window.setFramerateLimit(144);
   int index = -1;
@@ -192,12 +243,14 @@ int main() {
       if (event->is<sf::Event::Closed>()) {
         window.close();
       }
+
       if (checkForVictory()) {
         isWin = true;
         elapsed1 = clock.getElapsedTime();
         clock.stop();
       }
-      if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && !start) {
+      
+			if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && !start) {
         int x = sf::Mouse::getPosition(window).x;
         int y = sf::Mouse::getPosition(window).y;
         if ((x < 400 && x > 300) && (y < 200 && y > 100)) {
@@ -208,6 +261,7 @@ int main() {
           clearHighlight();
         }
       }
+
       if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
         clearHighlight();
         if (index != -1)
@@ -216,10 +270,10 @@ int main() {
         int y = sf::Mouse::getPosition(window).y;
         if ((x >= 30 && y >= 100 && y <= 200 && x <= 120)) {
           if (isPencil) {
-            icon.setTexture(notDrawing);
+            pencilIcon.setTexture(notDrawing);
             isPencil = false;
           } else {
-            icon.setTexture(drawing);
+            pencilIcon.setTexture(drawing);
             isPencil = true;
           }
         }
@@ -392,6 +446,7 @@ int main() {
       }
     }
     window.clear();
+		
     startScreen(start, window);
     drawTime(window, elapsed1, start);
     drawRectangles(window, isWin, start);
