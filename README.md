@@ -2,7 +2,8 @@
 For now, its just a simple sudoku game with minimal graphics, however I do plan to make it multiplayer/collaborative.
 
 # Running on Linux
-### Install dependencies (debian/Ubuntu)
+### Install dependencies 
+#### Debian/Ubuntu
 ```bash
 sudo apt update &&
 sudo apt install \
@@ -16,7 +17,7 @@ sudo apt install \
         libegl1-mesa-dev \
         libfreetype-dev
 ```
-### Install dependencies for fedora
+#### Fedora/RHEL
 ```bash 
 sudo dnf in libX11-devel \
         libXrandr-devel \
