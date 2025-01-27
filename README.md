@@ -29,6 +29,10 @@ sudo dnf in libX11-devel \
         flac-devel         
 
 ```
+### Dowloading
+```bash
+git clone https://github.com/nanda-gopal-sb/sudoku/
+```
 
 ### Building
 ```bash
