@@ -78,7 +78,7 @@ void pencilAppend(int numToAdd, int index)
   }
   else
   {
-    cells[index].pencilNums[found] = ' '; // basically turns the string back into an empty space
+    cells[index].pencilNums[found] = ' ';
   }
 }
 void clearSelected(int index) { cells[index].isSelected = false; }
@@ -105,7 +105,9 @@ int getGridIndex(int x, int y)
 {
   int mouse_x = x / CELL_SIZE;
   int mouse_y = y / CELL_SIZE;
-  mouse_y = mouse_y - offset / CELL_SIZE;
+  // reduced that many squares positions from the offset.
+  //(seeing as offset is a multiple of 80)
+  mouse_y = mouse_y - (offset / CELL_SIZE);
   if (mouse_y < 0)
   {
     return 0;
@@ -143,10 +145,10 @@ void clearHighlight()
  */
 void startScreen(sf::RenderWindow &window)
 {
-  text.setCharacterSize(30);
+  text.setCharacterSize(80);
   text.setFillColor(sf::Color(69, 133, 136));
   text.setString("PLAY");
-  text.setPosition({300, 100});
+  text.setPosition({290, 300});
   window.draw(text);
 }
 
@@ -155,7 +157,7 @@ void startScreen(sf::RenderWindow &window)
  */
 void drawRectangles(sf::RenderWindow &window, bool isWin)
 {
-  if (isWin)
+  if (isWin) // when the player wins, obviously
   {
     window.clear();
     int timeTaken = (elapsed1.asSeconds());
@@ -166,9 +168,9 @@ void drawRectangles(sf::RenderWindow &window, bool isWin)
     return;
   }
 
-  sf::RectangleShape rectangle({CELL_SIZE, CELL_SIZE});
+  sf::RectangleShape rectangle({CELL_SIZE, CELL_SIZE}); // for the cells
   sf::RectangleShape subgridSeparator({5, 1100});
-  subgridSeparator.setFillColor(sf::Color::Black);
+  subgridSeparator.setFillColor(sf::Color::Black); // the seperator colour
 
   for (int i = 0; i < 9; i++)
   {
@@ -177,18 +179,18 @@ void drawRectangles(sf::RenderWindow &window, bool isWin)
 
       if (cells[i + j * 9].isSelected)
       {
-        rectangle.setFillColor(sf::Color(102, 110, 120));
+        rectangle.setFillColor(sf::Color(102, 110, 120)); // the selected colour
       }
       else if (cells[i + j * 9].isHighlight)
       {
-        rectangle.setFillColor(sf::Color(218, 176, 128));
+        rectangle.setFillColor(sf::Color(218, 176, 128)); // the highlight colour
       }
       else
       {
-        rectangle.setFillColor(sf::Color::White);
+        rectangle.setFillColor(sf::Color::White); // default
       }
 
-      rectangle.setOutlineThickness(1);
+      rectangle.setOutlineThickness(1); // to get the smaller seperations apart from subgrid.
       rectangle.setOutlineColor(sf::Color::Black);
       rectangle.setPosition(
           {float(CELL_SIZE * i), float(CELL_SIZE * j) + offset});
@@ -197,17 +199,19 @@ void drawRectangles(sf::RenderWindow &window, bool isWin)
 
       // draw cell text
       text.setPosition({float(CELL_SIZE * i), float(CELL_SIZE * j) + offset});
+
+      // there are three main cases
       if (cells[i + j * 9].canBeChanged && !cells[i + j * 9].isPencil &&
-          cells[i + j * 9].number != 0)
+          cells[i + j * 9].number != 0) // when the number is not a pencil or an empty space
       {
         text.setCharacterSize(64);
-        text.setFillColor(sf::Color(16, 32, 115));
+        text.setFillColor(sf::Color(117, 78, 26));
         std::string String = std::to_string(cells[i + j * 9].number);
         String = " " + String;
         text.setString(String);
         window.draw(text);
       }
-      else if (cells[i + j * 9].isPencil)
+      else if (cells[i + j * 9].isPencil) // when its a pencil
       {
         text.setCharacterSize(21);
         text.setPosition({float(CELL_SIZE * i) + 8, float(CELL_SIZE * j) + offset});
@@ -215,7 +219,7 @@ void drawRectangles(sf::RenderWindow &window, bool isWin)
         text.setString(cells[i + j * 9].pencilNums);
         window.draw(text);
       }
-      else if (cells[i + j * 9].number != 0)
+      else if (cells[i + j * 9].number != 0) // when its an empty space
       {
         text.setCharacterSize(64);
         text.setFillColor(sf::Color(43, 8, 4));
@@ -321,7 +325,7 @@ int main()
         clearHighlight();
         int x = sf::Mouse::getPosition(window).x;
         int y = sf::Mouse::getPosition(window).y;
-        if ((x < 400 && x > 300) && (y < 200 && y > 100))
+        if ((x < 498 && x > 320) && (y < 400 && y > 298))
         {
           start = true;
           index = -1;
