@@ -31,18 +31,11 @@ sudo dnf in libX11-devel \
         flac-devel         
 
 ```
-### Dowloading
+### Building & running
 ```bash
-git clone https://github.com/nanda-gopal-sb/sudoku/
-```
-
-### Building
-```bash
+git clone --depth 1 https://github.com/nanda-gopal-sb/sudoku/
+cd sudoku
 cmake -B build
 cmake --build build
-```
-### Run the binary
-from project directory:
-```
 ./build/bin/main
 ```
