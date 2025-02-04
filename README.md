@@ -1,5 +1,6 @@
 ## The Sudoku Game
-For now, its just a simple sudoku game with minimal graphics, however I do plan to make it multiplayer/collaborative.
+
+A simple sudoku game, made with SFML and C++. Uses openGL underneath.
 
 # Running on Linux
 ### Install dependencies 
